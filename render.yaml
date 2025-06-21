@@ -1,11 +1,19 @@
 services:
   - type: web
     name: tech-job-scraper-api
+    runtime: python
     env: python
-    runtime: python-3.11.9
-    buildCommand: "pip install -r requirements-api.txt"
-    startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: ./build.sh
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: PIP_NO_CACHE_DIR
+        value: "1"
       - key: DATABASE_URL
         value: sqlite:///tmp/jobs.db
       - key: PYTHONPATH
@@ -13,5 +21,4 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: "10000"
-    healthCheckPath: "/health" 
+        value: "10000" 
