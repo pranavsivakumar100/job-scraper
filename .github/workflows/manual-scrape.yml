@@ -1,0 +1,106 @@
+name: 🧪 Manual Job Scraping Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'Company to scrape (Apple, NVIDIA, or both)'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+        - both
+        - Apple
+        - NVIDIA
+      max_jobs:
+        description: 'Maximum jobs to scrape (for testing)'
+        required: false
+        default: '50'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test-scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🌐 Install Playwright browsers
+      run: |
+        playwright install chromium
+        
+    - name: 🗄️ Set up test database
+      run: |
+        sudo systemctl start postgresql.service
+        sudo -u postgres createuser --createdb runner
+        sudo -u postgres createdb test_job_scraper -O runner
+        
+    - name: 🔧 Initialize database
+      env:
+        DATABASE_URL: postgresql://runner@localhost/test_job_scraper
+      run: |
+        python -c "
+        from database.models import create_tables
+        create_tables()
+        print('✅ Test database ready')
+        "
+        
+    - name: 🧪 Run test scrape
+      env:
+        DATABASE_URL: postgresql://runner@localhost/test_job_scraper
+      run: |
+        echo "🧪 Testing scraper with company: ${{ github.event.inputs.company }}"
+        echo "📊 Max jobs limit: ${{ github.event.inputs.max_jobs }}"
+        
+        if [ "${{ github.event.inputs.company }}" = "both" ] || [ "${{ github.event.inputs.company }}" = "Apple" ]; then
+          echo "🍎 Testing Apple scraper..."
+          timeout 300 python scraper/main.py Apple || echo "⚠️ Apple scrape timed out or failed"
+        fi
+        
+        if [ "${{ github.event.inputs.company }}" = "both" ] || [ "${{ github.event.inputs.company }}" = "NVIDIA" ]; then
+          echo "🟢 Testing NVIDIA scraper..."
+          timeout 300 python scraper/main.py NVIDIA || echo "⚠️ NVIDIA scrape timed out or failed"
+        fi
+        
+    - name: 📊 Test results
+      env:
+        DATABASE_URL: postgresql://runner@localhost/test_job_scraper
+      run: |
+        python -c "
+        from database.models import get_session, JobListing
+        session = get_session()
+        
+        total = session.query(JobListing).count()
+        apple = session.query(JobListing).filter(JobListing.company == 'Apple').count()
+        nvidia = session.query(JobListing).filter(JobListing.company == 'NVIDIA').count()
+        
+        print('🧪 TEST RESULTS')
+        print('=' * 30)
+        print(f'📊 Total Jobs: {total}')
+        print(f'🍎 Apple: {apple}')
+        print(f'🟢 NVIDIA: {nvidia}')
+        print('=' * 30)
+        
+        if total > 0:
+            print('✅ Scraping test PASSED')
+        else:
+            print('❌ Scraping test FAILED - no jobs found')
+            exit(1)
+            
+        session.close()
+        " 

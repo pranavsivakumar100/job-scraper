@@ -1,0 +1,178 @@
+name: 🕐 Automated Job Scraping
+
+on:
+  # Run twice daily at 12 PM and 12 AM UTC
+  schedule:
+    - cron: '0 12 * * *'  # 12:00 PM UTC (8 AM EDT / 5 AM PDT)
+    - cron: '0 0 * * *'   # 12:00 AM UTC (8 PM EDT / 5 PM PDT)
+  
+  # Allow manual triggering
+  workflow_dispatch:
+  
+  # Run on pushes to main (for testing)
+  push:
+    branches: [ main ]
+    paths: 
+      - 'scraper/**'
+      - '.github/workflows/**'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: 🌐 Install Playwright browsers
+      run: |
+        playwright install chromium
+        playwright install-deps chromium
+        
+    - name: 🗄️ Set up PostgreSQL
+      run: |
+        sudo systemctl start postgresql.service
+        sudo -u postgres createuser --createdb runner
+        sudo -u postgres createdb job_scraper_github -O runner
+        
+    - name: 🔧 Configure database
+      env:
+        DATABASE_URL: postgresql://runner@localhost/job_scraper_github
+      run: |
+        python -c "
+        import os
+        from database.models import create_tables
+        create_tables()
+        print('✅ Database tables created successfully')
+        "
+        
+    - name: 🍎 Scrape Apple Jobs
+      env:
+        DATABASE_URL: postgresql://runner@localhost/job_scraper_github
+      run: |
+        echo "🍎 Starting Apple scrape..."
+        python scraper/main.py Apple
+        
+    - name: 🟢 Scrape NVIDIA Jobs  
+      env:
+        DATABASE_URL: postgresql://runner@localhost/job_scraper_github
+      run: |
+        echo "🟢 Starting NVIDIA scrape..."
+        python scraper/main.py NVIDIA
+        
+    - name: 📊 Generate scraping report
+      env:
+        DATABASE_URL: postgresql://runner@localhost/job_scraper_github
+      run: |
+        python -c "
+        import os
+        from database.models import get_session, JobListing
+        from sqlalchemy import func
+        
+        session = get_session()
+        
+        # Get total counts
+        total_jobs = session.query(JobListing).count()
+        apple_jobs = session.query(JobListing).filter(JobListing.company == 'Apple').count()
+        nvidia_jobs = session.query(JobListing).filter(JobListing.company == 'NVIDIA').count()
+        
+        # Get recent jobs (last 24 hours)
+        from datetime import datetime, timedelta
+        yesterday = datetime.utcnow() - timedelta(days=1)
+        recent_jobs = session.query(JobListing).filter(JobListing.scraped_date >= yesterday).count()
+        
+        print('📊 SCRAPING REPORT')
+        print('=' * 50)
+        print(f'📈 Total Jobs: {total_jobs}')
+        print(f'🍎 Apple Jobs: {apple_jobs}')
+        print(f'🟢 NVIDIA Jobs: {nvidia_jobs}')
+        print(f'🆕 New Jobs (24h): {recent_jobs}')
+        print('=' * 50)
+        
+        session.close()
+        "
+        
+    - name: 💾 Export database dump
+      env:
+        DATABASE_URL: postgresql://runner@localhost/job_scraper_github
+      run: |
+        # Create a lightweight data export for deployment
+        python -c "
+        import json
+        import os
+        from database.models import get_session, JobListing
+        from datetime import datetime
+        
+        session = get_session()
+        
+        # Get recent jobs for export (last 30 days)
+        from datetime import timedelta
+        cutoff = datetime.utcnow() - timedelta(days=30)
+        jobs = session.query(JobListing).filter(JobListing.scraped_date >= cutoff).limit(1000).all()
+        
+        export_data = []
+        for job in jobs:
+            export_data.append({
+                'id': job.id,
+                'company': job.company,
+                'title': job.title,
+                'location': job.location,
+                'remote_type': job.remote_type,
+                'employment_type': job.employment_type,
+                'url': job.url,
+                'posted_date': job.posted_date.isoformat() if job.posted_date else None,
+                'scraped_date': job.scraped_date.isoformat() if job.scraped_date else None
+            })
+        
+        # Save to file
+        with open('scraped_jobs.json', 'w') as f:
+            json.dump(export_data, f, indent=2)
+            
+        print(f'✅ Exported {len(export_data)} jobs to scraped_jobs.json')
+        session.close()
+        "
+        
+    - name: 📤 Upload scraped data artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: scraped-jobs-${{ github.run_number }}
+        path: scraped_jobs.json
+        retention-days: 30
+
+  # Deploy API to cloud (optional)
+  deploy-api:
+    needs: scrape-jobs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 📤 Download scraped data
+      uses: actions/download-artifact@v3
+      with:
+        name: scraped-jobs-${{ github.run_number }}
+        
+    - name: 🚀 Deploy to Vercel (with real data)
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      run: |
+        # This would update your Vercel deployment with real data
+        echo "🚀 Would deploy updated API with real data to Vercel"
+        echo "📊 Scraped data available in scraped_jobs.json" 
