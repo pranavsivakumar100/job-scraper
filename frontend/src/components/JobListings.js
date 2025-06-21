@@ -29,8 +29,7 @@ import { useQuery } from 'react-query';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { API_BASE_URL } from '../config/api';
 
 const JobListings = () => {
   const [filters, setFilters] = useState({
