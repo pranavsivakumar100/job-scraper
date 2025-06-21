@@ -2,20 +2,26 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/main.py",
+      "src": "api/vercel_main.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb"
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.11"
       }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/main.py"
+      "dest": "api/vercel_main.py"
     }
   ],
-  "env": {
-    "PYTHON_VERSION": "3.11"
+      "functions": {
+      "api/vercel_main.py": {
+        "includeFiles": "data/**"
+      }
+    },
+  "install": {
+    "args": ["-r", "requirements-api.txt"]
   }
 } 
