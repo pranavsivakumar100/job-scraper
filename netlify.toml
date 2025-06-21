@@ -5,7 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  REACT_APP_API_URL = "https://your-app-name.railway.app"
+  REACT_APP_API_URL = "https://scheduler-production-7220.up.railway.app"
 
 # Redirect all routes to index.html for React Router
 [[redirects]]
