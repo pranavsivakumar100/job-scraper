@@ -10,7 +10,7 @@ import os
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database.models import JobListing, get_session
+from database.models import JobListing, get_session, create_tables
 from pydantic import BaseModel
 
 app = FastAPI(
@@ -18,6 +18,16 @@ app = FastAPI(
     description="API for accessing scraped tech job listings from multiple companies with accurate posting dates",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    try:
+        create_tables()
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
+        # Don't fail startup if database creation fails
 
 # Configure CORS
 app.add_middleware(
