@@ -1,34 +1,34 @@
-# 🕐 Tech Job Scraper - Automated Multi-Company Scheduler
+# Tech Job Scraper
 
-A powerful, energy-efficient job scraper that automatically collects tech jobs from multiple companies with smart incremental updates and twice-daily scheduling.
+An automated job scraper that collects tech positions from Apple and NVIDIA with scheduled updates twice daily. Built to be energy-efficient with incremental scraping that only processes new jobs.
 
-## ✨ Features
+## Features
 
-### 🤖 Automated Scheduling
-- **🕐 Twice Daily**: Runs at 12:00 PM and 12:00 AM automatically
-- **⚡ Incremental Updates**: Only scrapes new jobs, 80-95% energy savings
-- **🔄 Duplicate Prevention**: Smart duplicate detection skips existing jobs
-- **🧹 Auto Cleanup**: Removes jobs older than 60 days automatically
-- **🛡️ Error Recovery**: Automatic restart on failures with systemd
+### Automated Scheduling
+- Runs automatically at 12:00 PM and 12:00 AM daily
+- Incremental updates only scrape new jobs (80-95% efficiency improvement)
+- Smart duplicate detection to avoid reprocessing existing jobs
+- Automatic cleanup of jobs older than 60 days
+- Systemd service integration for production deployment
 
-### 🏢 Multi-Company Support
-- **🍎 Apple Jobs**: Official Apple career pages with accurate posting dates
-- **🟢 NVIDIA Jobs**: NVIDIA career portal via API integration
-- **🔧 Extensible**: Easy to add new companies
+### Multi-Company Support
+- **Apple**: Scrapes official Apple career pages with accurate posting dates
+- **NVIDIA**: Integrates with NVIDIA's Workday API
+- Extensible architecture makes it easy to add new companies
 
-### 📊 Smart Data Management
-- **📅 Recent Jobs Only**: Filters to jobs posted within last 30 days
-- **🎯 Accurate Dates**: Real posting dates extracted from job pages
-- **🗃️ Efficient Storage**: SQLite with optimized indexes
-- **📈 95% Duplicate Skip Rate**: Extremely efficient incremental updates
+### Data Management
+- Filters to jobs posted within last 30 days
+- Extracts real posting dates from job pages
+- SQLite database with optimized indexes
+- 95% duplicate skip rate for efficient updates
 
-### 🎨 Modern Frontend
-- **🚀 React + Material-UI**: Clean, responsive interface
-- **🔍 Advanced Filtering**: Filter by company, location, experience, remote type
-- **📊 Analytics Dashboard**: Visual insights and job distribution
-- **⚡ Fast API**: RESTful API with pagination and comprehensive filtering
+### Web Interface
+- React frontend with Material-UI components
+- Advanced filtering by company, location, experience level, and remote type
+- Analytics dashboard with job distribution charts
+- RESTful API with pagination and comprehensive filtering
 
-## 🚀 Quick Start
+## Getting Started
 
 ### Automated Setup (Recommended)
 ```bash
@@ -39,11 +39,8 @@ cd job-scraper
 # Run automated setup
 ./setup_scheduler.sh
 
-# The script will:
-# 1. Install all dependencies
-# 2. Test the scheduler
-# 3. Create systemd service
-# 4. Start automated scraping
+# This will install dependencies, test the scheduler, 
+# create a systemd service, and start automated scraping
 ```
 
 ### Manual Setup
@@ -59,20 +56,20 @@ python3 scraper/scheduler.py test Apple
 python3 scraper/scheduler.py start
 ```
 
-## 📅 Automated Schedule
+## Scheduling
 
-### Schedule Details
-- **12:00 PM (noon)**: Midday scrape for new business hour postings
-- **12:00 AM (midnight)**: End-of-day scrape for final updates
+The scraper runs twice daily:
+- **12:00 PM**: Midday scrape for new business hour postings
+- **12:00 AM**: End-of-day scrape for final updates
 
-### Performance Metrics
+Typical performance:
 - **Apple**: ~211 jobs, ~15 seconds, ~95% duplicate skip rate
 - **NVIDIA**: ~700 jobs, ~25 seconds, ~95% duplicate skip rate
 - **Total time**: ~45 seconds per run
 - **Energy savings**: 80-95% vs full scraping
 - **New jobs per day**: 10-50 jobs typically
 
-## 🔧 Managing the Scheduler
+## Managing the Scheduler
 
 ### Service Commands
 ```bash
@@ -109,16 +106,16 @@ python3 scraper/scheduler.py test Apple
 ./setup_scheduler.sh test      # Test scheduler
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ### Backend
-- **Python FastAPI**: High-performance async API
+- **Python FastAPI**: Async API server
 - **SQLAlchemy ORM**: Database abstraction with optimized queries
-- **Playwright + BeautifulSoup**: JavaScript-heavy page scraping
+- **Playwright + BeautifulSoup**: For scraping JavaScript-heavy pages
 - **Schedule Library**: Cron-like job scheduling
 
 ### Database
-- **SQLite**: Lightweight, efficient storage
+- **SQLite**: Lightweight storage
 - **Optimized Indexes**: Fast duplicate checking and filtering
 - **Auto Cleanup**: Maintains 60-day rolling window
 
@@ -128,12 +125,12 @@ python3 scraper/scheduler.py test Apple
 - **Base Scraper**: Concurrent processing with rate limiting
 
 ### Frontend
-- **React 18**: Modern component-based UI
-- **Material-UI**: Professional design system
+- **React 18**: Component-based UI
+- **Material-UI**: Design system
 - **Company Filtering**: Dynamic filtering by company selection
 - **Real-time Updates**: Live data from scheduled scraping
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Core Endpoints
 - **GET** `/jobs` - Get job listings with filtering (company, location, experience, etc.)
@@ -157,19 +154,19 @@ curl http://localhost:8000/jobs?company=NVIDIA&remote_type=Remote
 curl http://localhost:8000/companies
 ```
 
-## ⚡ Energy Efficiency Features
+## Efficiency Features
 
 ### Incremental Scraping
-- **Smart Duplicate Detection**: Checks existing job URLs before processing
-- **Recent Jobs Filter**: Only processes jobs from last 30 days
-- **Batch Processing**: Efficient database operations
-- **Rate Limiting**: Respectful delays between requests
+- Smart duplicate detection checks existing job URLs before processing
+- Only processes jobs from last 30 days
+- Efficient database operations with batch processing
+- Rate limiting with respectful delays between requests
 
 ### Resource Optimization
-- **Memory Limits**: Service limited to 2GB RAM
-- **CPU Throttling**: Limited to 80% CPU usage
-- **Connection Pooling**: Reuses HTTP connections
-- **Database Cleanup**: Automatic removal of old data
+- Service limited to 2GB RAM
+- CPU usage limited to 80%
+- HTTP connection pooling
+- Automatic removal of old data
 
 ### Typical Performance
 ```
@@ -181,14 +178,14 @@ Daily Scraping Results:
 └── Energy Savings: 80-95% vs full scraping
 ```
 
-## 📊 Monitoring and Logs
+## Monitoring and Logs
 
 ### Log Locations
 - **Service logs**: `sudo journalctl -u job-scraper`
 - **Scheduler logs**: `logs/scheduler.log`
 - **Application logs**: Console output
 
-### Key Metrics
+### Useful Commands
 ```bash
 # Recent scraping activity
 sudo journalctl -u job-scraper --since "1 hour ago"
@@ -210,26 +207,26 @@ sudo systemctl show job-scraper --property=MemoryCurrent
 2024-06-21 12:01:15 - Summary: 911 scraped, 15 saved, 867 skipped
 ```
 
-## 🎯 Company Coverage
+## Company Coverage
 
-### Apple (194 jobs)
-- **Official Source**: jobs.apple.com
-- **Accurate Dates**: JSON extraction from job pages
-- **Coverage**: All tech roles, internships, retail positions
-- **Update Frequency**: Real-time with posting date validation
+### Apple (~194 jobs)
+- Source: jobs.apple.com
+- JSON extraction from job pages for accurate dates
+- Covers all tech roles, internships, and retail positions
+- Real-time updates with posting date validation
 
-### NVIDIA (700 jobs)
-- **Official Source**: nvidia.wd5.myworkdayjobs.com
-- **API Integration**: Direct Workday API access
-- **Date Parsing**: Smart relative date conversion
-- **Coverage**: Engineering, AI/ML, hardware, internships
+### NVIDIA (~700 jobs)
+- Source: nvidia.wd5.myworkdayjobs.com
+- Direct Workday API integration
+- Smart relative date conversion
+- Covers engineering, AI/ML, hardware, and internships
 
-## 🔄 Adding New Companies
+## Adding New Companies
 
-1. **Create Scraper**: Extend `BaseScraper` class
-2. **Add to Scheduler**: Update `scrapers` dict in `scheduler.py`
-3. **Test**: Run `python3 scraper/scheduler.py test NewCompany`
-4. **Deploy**: Restart service `sudo systemctl restart job-scraper`
+1. Create a scraper by extending the `BaseScraper` class
+2. Add it to the `scrapers` dict in `scheduler.py`
+3. Test with `python3 scraper/scheduler.py test NewCompany`
+4. Deploy by restarting the service: `sudo systemctl restart job-scraper`
 
 Example:
 ```python
@@ -254,7 +251,7 @@ self.scrapers = {
 }
 ```
 
-## 🛠️ Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -281,19 +278,19 @@ rm data/jobs.db
 python3 scraper/scheduler.py test Apple
 ```
 
-## 🚀 GitHub Deployment
+## Deployment
 
-### Preparing for GitHub
-Your project is **ready to push to GitHub** - no secrets detected! ✅
+### GitHub Ready
+This project is ready to push to GitHub - no secrets or sensitive data in the codebase.
 
-### What's Included
-- ✅ No API keys or passwords in code
-- ✅ Environment variables with safe defaults
-- ✅ Comprehensive `.gitignore` file
-- ✅ Local SQLite database (excluded from git)
-- ✅ Service files with placeholder paths
+What's included:
+- No API keys or passwords in code
+- Environment variables with safe defaults
+- Comprehensive `.gitignore` file
+- Local SQLite database (excluded from git)
+- Service files with placeholder paths
 
-### Before Pushing
+### Pushing to GitHub
 ```bash
 # Add all files
 git add .
@@ -305,7 +302,7 @@ git commit -m "Initial commit: Multi-company tech job scraper"
 git push origin main
 ```
 
-### Environment Variables for Deployment
+### Environment Variables for Production
 Create a `.env` file on your server:
 ```bash
 # Database (defaults to SQLite)
@@ -318,7 +315,7 @@ REACT_APP_API_URL=https://your-domain.com
 # DATABASE_URL=postgresql://user:pass@localhost:5432/jobs
 ```
 
-## 📈 Performance Optimization
+## Performance
 
 ### Current Performance
 - **Memory Usage**: 200-500MB during scraping

@@ -14,8 +14,8 @@ from database.models import JobListing, get_session
 from pydantic import BaseModel
 
 app = FastAPI(
-    title="Apple Jobs Scraper API",
-    description="API for accessing scraped Apple job listings with accurate posting dates",
+    title="Tech Jobs Scraper API",
+    description="API for accessing scraped tech job listings from multiple companies with accurate posting dates",
     version="1.0.0"
 )
 
@@ -75,7 +75,7 @@ class FilterStats(BaseModel):
 @app.get("/")
 async def root():
     """Root endpoint"""
-    return {"message": "Apple Jobs Scraper API", "version": "1.0.0"}
+    return {"message": "Tech Jobs Scraper API", "version": "1.0.0"}
 
 @app.get("/health")
 async def health_check():
