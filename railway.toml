@@ -12,6 +12,7 @@ restartPolicyMaxRetries = 10
 [environments.production]
 variables = { 
   NODE_ENV = "production",
-  DATABASE_URL = "sqlite:///./jobs.db",
-  PYTHONPATH = "."
+  DATABASE_URL = "sqlite:///tmp/jobs.db",
+  PYTHONPATH = ".",
+  PORT = "8000"
 } 

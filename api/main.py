@@ -23,10 +23,12 @@ app = FastAPI(
 async def startup_event():
     """Initialize database on startup"""
     try:
+        print("Starting database initialization...")
         create_tables()
         print("Database tables created successfully")
     except Exception as e:
         print(f"Error creating database tables: {e}")
+        print("Continuing startup without database...")
         # Don't fail startup if database creation fails
 
 # Configure CORS
@@ -94,7 +96,11 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy"}
+    try:
+        # Simple health check that doesn't depend on database
+        return {"status": "healthy", "message": "API is running"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.get("/companies")
 async def get_companies(db: Session = Depends(get_db_session)):
