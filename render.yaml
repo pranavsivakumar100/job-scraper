@@ -2,6 +2,7 @@ services:
   - type: web
     name: tech-job-scraper-api
     env: python
+    runtime: python-3.11.9
     buildCommand: "pip install -r requirements-api.txt"
     startCommand: "uvicorn api.main:app --host 0.0.0.0 --port $PORT"
     envVars:
